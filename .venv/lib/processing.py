@@ -1,25 +1,42 @@
 import csv
 import pandas as pd
+import os
 
-df = pd.concat(map(pd.read_csv, ['/Users/sinelisiwesibeko/PycharmProjects/quantium-starter-repo/data/daily_sales_data_0.csv', '/Users/sinelisiwesibeko/PycharmProjects/quantium-starter-repo/data/daily_sales_data_1.csv', '/Users/sinelisiwesibeko/PycharmProjects/quantium-starter-repo/data/daily_sales_data_2.csv']), ignore_index=True)
+DATA_DIRECTORY = "/Users/sinelisiwesibeko/PycharmProjects/quantium-starter-repo/data"
+OUTPUT_FILE_PATH = "./formatted_data.csv"
 
-mask = df['product'] == 'pink morsel'
-df = df[mask]
+# open the output file
+with open(OUTPUT_FILE_PATH, "w") as output_file:
+    writer = csv.writer(output_file)
 
-df['price'] = df['price'].str.replace('$','')
-df['price'] = df['price'].astype('float')
+#    # add a csv header
+    header = ["sales", "date", "region"]
+    writer.writerow(header)
 
-df['Sales'] = df['price'] * df['quantity']
-df['Date'] = df['date'].astype('datetime64[ns]')
-df['Region'] = df['region'].astype('str')
+#    # iterate through all files in the data directory
+    for file_name in os.listdir(DATA_DIRECTORY):
+        # open the csv file for reading
+        with open(f"{DATA_DIRECTORY}/{file_name}", "r") as input_file:
+            reader = csv.reader(input_file)
+            # iterate through each row in the csv file
+            row_index = 0
+            for input_row in reader:
+                # if this row is not the csv header, process it
+                if row_index > 0:
+                    # collect data from row
+                    product = input_row[0]
+                    raw_price = input_row[1]
+                    quantity = input_row[2]
+                    transaction_date = input_row[3]
+                    region = input_row[4]
 
-df.pop('product')
-df.pop('price')
-df.pop('quantity')
-df.pop('date')
-df.pop('region')
+                    # if this is a pink morsel transaction, process it
+                    if product == "pink morsel":
+                        # finish formatting data
+                        price = float(raw_price[1:])
+                        sale = price * int(quantity)
 
-df.to_csv('processed_data.csv')
-
-#print(df)
-
+                        # write the row to output file
+                        output_row = [sale, transaction_date, region]
+                        writer.writerow(output_row)
+                row_index += 1
