@@ -19,6 +19,7 @@ df.pop('quantity')
 df.pop('date')
 df.pop('region')
 
-print(df)
+df.to_csv('processed_data.csv')
 
+#print(df)
 
